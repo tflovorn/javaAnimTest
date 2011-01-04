@@ -25,18 +25,24 @@
 
 import java.applet.*;
 import java.awt.*;
+import java.net.*;
+import java.util.ArrayList;
 
 public class Animate extends Applet implements Runnable {
-    final int fps = 24, totalFrames, waitTime;
+    final int fps = 24;
     Thread animator = null;
-    bool animatorSuspended;
+    boolean animatorSuspended;
     ArrayList<Image> imageList;
-    int frameNumber = 0;
+    int frameNumber = 0, totalFrames, waitTime;
     
     // constructor for applet
     public void init() {
-        URL imageBase = URL(getCodeBase(), "rickroll");
-        loadImages(imageBase, "rickroll", "png", 24);
+        try {
+            URL imageBase = new URL(getCodeBase(), "rickroll"); 
+            loadImages(imageBase, "rickroll", "png", 24);
+        } catch (MalformedURLException e) { 
+            // kill applet here?
+        }
     }
 
     // destructor for applet
@@ -99,13 +105,13 @@ public class Animate extends Applet implements Runnable {
     }
 
     public void update(Graphics g) {
-        g.drawImage(imageList.at(frameNumber), 0, 0, null);
+        g.drawImage(imageList.get(frameNumber), 0, 0, null);
     }
 
     // load specified series of images into imageList
     private void loadImages(URL base, String prefix, String extension, 
                             int numToLoad) {
-        imageList = new ArrayList<Image>;
+        imageList = new ArrayList<Image>();
         for (int index = 0; index < numToLoad; index++) {
             String fileName = prefix + String.valueOf(index) + extension;
             Image img = getImage(base, fileName);
