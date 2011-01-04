@@ -36,7 +36,7 @@ public class Animate extends Applet implements Runnable {
     // constructor for applet
     public void init() {
         URL imageBase = URL(getCodeBase(), "rickroll");
-        loadImages(imageBase, "rickroll", 24);
+        loadImages(imageBase, "rickroll", "png", 24);
     }
 
     // destructor for applet
@@ -70,9 +70,10 @@ public class Animate extends Applet implements Runnable {
 
     // main thread (required by Runnable)
     public void run() {
+        long time = System.currentTimeMillis();
         try {
             while (true) {
-                // if the thread is suspended, wait until notify
+                // if the thread is suspended, wait until it isn't
                 if (animatorSuspended) {
                     synchronized (this) {
                         while (animatorSuspended) {
@@ -80,29 +81,37 @@ public class Animate extends Applet implements Runnable {
                         }
                     }
                 }
-                // advance the frame number, roll over to 0 at numFrames
-                frameNumber = (frameNumber + 1) % totalFrames;
                 // paint frame
                 repaint();
                 // don't go to next frame immediately
-                animator.sleep(waitTime);
+                time += waitTime;
+                animator.sleep(Math.max(0, time - System.currentTimeMillis()));
+                // advance the frame number, roll over to 0 at numFrames
+                frameNumber = (frameNumber + 1) % totalFrames;
             }
         }
         catch (InterruptedException e) { }
     }
 
     // called on redraw
-    public void paint() {
-
+    public void paint(Graphics g) {
+        update(g);
     }
 
-    private void loadImages(URL base, String prefix, int numToLoad) {
+    public void update(Graphics g) {
+        g.drawImage(imageList.at(frameNumber), 0, 0, null);
+    }
+
+    // load specified series of images into imageList
+    private void loadImages(URL base, String prefix, String extension, 
+                            int numToLoad) {
         imageList = new ArrayList<Image>;
         for (int index = 0; index < numToLoad; index++) {
-            Image img = getImage(base, prefix + String.valueOf(index));
+            String fileName = prefix + String.valueOf(index) + extension;
+            Image img = getImage(base, fileName);
             imageList.add(img);
         }
         totalFrames = numToLoad;
-        waitTime = totalFrames / fps;
+        waitTime = 1000 * totalFrames / fps;
     }
 }
