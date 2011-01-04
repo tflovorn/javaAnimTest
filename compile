@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export CLASSPATH=.
+javac javaAnimTest/Logger.java
+javac javaAnimTest/Animate.java
